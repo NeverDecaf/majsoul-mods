@@ -1,0 +1,12 @@
+// Snippets that aren't suited for a full-blown mod
+// Run these by opening your dev console (ctrl+shift+i) and pasting them in.
+
+
+// Chiori board game quick roll (rolls 11 dice at once):
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+for (let step = 0; step < 12; step++) {
+app.NetAgent.sendReq2Lobby("Lobby","richmanActivityNextMove",{activity_id:1094});
+await sleep(250);
+}
