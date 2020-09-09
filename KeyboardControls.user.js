@@ -27,11 +27,29 @@
 
 // If CONFIRM_DISCARDS is false tile hotkeys will discard immediately.
 var CONFIRM_DISCARDS = false;
-//                   1   2   3   4   5   6   7   8   9   0    -    =  bksp    |
+//                   1   2   3   4   5   6   7   8   9   0    -    =  bksp |
 var TILE_HOTKEYS = [49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 189, 187, 8, 220];
 // some may not display correctly, override below:
 var TILE_DISP = ['', '', '', '', '', '', '', '', '', '', '', '=', '←', '\\'];
-
+var HOTKEYS = {
+    'left': 37, // left arrow
+    'right': 39, // right arrow
+    'discard': 13, // enter
+    'tsumogiri': 84, // t
+    'skip': 83, // s
+    'pon': 80, // p
+    'chi': 67, // c
+    'kan': 75, // k
+    'win': 87, // w
+    'riichi': 82, // r
+    'pei': 78, // n
+    'nineterminalsabort': 188, // ,
+}
+// NUMPAD KEYS:        7    8    9    4    5    6   1   2   3   0    .    +
+var EMOJI_HOTKEYS = [103, 104, 105, 100, 101, 102, 97, 98, 99, 96, 110, 107];
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+//////////////////////////////////////////////
 var waitkbmod = setInterval(() => {
     try {
         uiscript.UI_DesktopInfo.Inst.block_emo
@@ -41,11 +59,11 @@ var waitkbmod = setInterval(() => {
             // should enable spamming while key is held down (might be system/browser dependant)
             var key = e.keyCode ? e.keyCode : e.which;
             switch (key) {
-                case 37: // left
+                case HOTKEYS.left:
                     // move 1 tile left
                     move_left();
                     break;
-                case 39: //right
+                case HOTKEYS.right:
                     // move 1 tile right
                     move_right();
                     break;
@@ -54,93 +72,42 @@ var waitkbmod = setInterval(() => {
         window.onkeyup = function(e) {
             var key = e.keyCode ? e.keyCode : e.which;
             switch (key) {
-
-                // tile ops
-
-                case 13: //enter
-                    //discard selected tile
+                case HOTKEYS.discard:
                     discardTile(selectedTile);
                     break;
-                case 84: // t
-                    // quick tsumogiri
+                case HOTKEYS.tsumogiri:
                     discardTile(view.ViewPlayer_Me.Inst.hand.length - 1);
                     break;
-
-                    // call ops
-
-                case 83: // s
-                    // skip
+                case HOTKEYS.skip:
                     callOperation('btn_cancel')
                     break;
-                case 80: // p
-                    // pon
+                case HOTKEYS.pon:
                     callOperation('btn_peng')
                     break;
-                case 67: // c
-                    // chi
+                case HOTKEYS.chi:
                     callOperation('btn_chi')
                     // if there are multiple, check this._data.chi.length > 1, see i.prototype.onBtn_Chi
                     break;
-                case 75: // k
-                    // kan
+                case HOTKEYS.kan:
                     callOperation('btn_gang')
                     break;
-                case 87: // w
-                    // ron/tsumo
+                case HOTKEYS.win:
                     callOperation('btn_hu')
                     callOperation('btn_zimo')
                     break;
-                case 82: // r
-                    // riichi
+                case HOTKEYS.riichi:
                     callOperation('btn_lizhi')
                     break;
-                case 78: // n
-                    // pei
+                case HOTKEYS.pei:
                     callOperation('btn_babei')
                     break;
-                case 188: // ,
-                    // 9 terminal/honor redraw
+                case HOTKEYS.nineterminalsabort:
                     callOperation('btn_jiuzhongjiupai')
                     break;
-
-                    // emojis
-
-                case 103: // NUM 7
-                    sendEmoji(0)
-                    break;
-                case 104: // NUM 8
-                    sendEmoji(1)
-                    break;
-                case 105: // NUM 9
-                    sendEmoji(2)
-                    break;
-                case 100: // NUM 4
-                    sendEmoji(3)
-                    break;
-                case 101: // NUM 5
-                    sendEmoji(4)
-                    break;
-                case 102: // NUM 6
-                    sendEmoji(5)
-                    break;
-                case 97: // NUM 1
-                    sendEmoji(6)
-                    break;
-                case 98: // NUM 2
-                    sendEmoji(7)
-                    break;
-                case 99: // NUM 3
-                    sendEmoji(8)
-                    break;
-                case 96: // NUM 0
-                    sendEmoji(9)
-                    break;
-                case 110: // NUM .
-                    sendEmoji(10)
-                    break;
-                case 107: // NUM +
-                    sendEmoji(11)
-                    break;
+            }
+            // send emojis
+            if (EMOJI_HOTKEYS.includes(key)) {
+                sendEmoji(EMOJI_HOTKEYS.indexOf(key));
             }
             // choose tile directly
             if (TILE_HOTKEYS.includes(key)) {
