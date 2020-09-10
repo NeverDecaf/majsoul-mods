@@ -12,13 +12,13 @@
 // @grant        none
 // ==/UserScript==
 
-// v2
+// v3
 // get keycodes here: https://keycode.info/
+// skip and discard hotkeys will also press the Confirm button at the end of round/game
+
 
 // planned:
 // selector for multi-wait chi calls
-// hotkeys for auto buttons (on left)
-// hotkey for end of round Confirm(3) button
 
 // maybe:
 // tsumogiri + cancel on same button? might be conflicts such as tenpai state
@@ -32,6 +32,7 @@ var TILE_HOTKEYS = [49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 189, 187, 8, 220];
 // some may not display correctly, override below:
 var TILE_DISP = ['', '', '', '', '', '', '', '', '', '', '', '=', '←', '\\'];
 var HOTKEYS = {
+    // skip and discard hotkeys will also press the Confirm button at the end of round/game
     'left': 37, // left arrow
     'right': 39, // right arrow
     'discard': 13, // enter
@@ -44,6 +45,9 @@ var HOTKEYS = {
     'riichi': 82, // r
     'pei': 78, // n
     'nineterminalsabort': 188, // ,
+    'autowin': 72, // h
+    'nocall': 70, // f
+    'autogiri': 68, // d
 }
 // NUMPAD KEYS:        7    8    9    4    5    6   1   2   3   0    .    +
 var EMOJI_HOTKEYS = [103, 104, 105, 100, 101, 102, 97, 98, 99, 96, 110, 107];
@@ -74,12 +78,14 @@ var waitkbmod = setInterval(() => {
             switch (key) {
                 case HOTKEYS.discard:
                     discardTile(selectedTile);
+                    pressConfirm();
                     break;
                 case HOTKEYS.tsumogiri:
                     discardTile(view.ViewPlayer_Me.Inst.hand.length - 1);
                     break;
                 case HOTKEYS.skip:
                     callOperation('btn_cancel')
+                    pressConfirm();
                     break;
                 case HOTKEYS.pon:
                     callOperation('btn_peng')
@@ -104,6 +110,15 @@ var waitkbmod = setInterval(() => {
                 case HOTKEYS.nineterminalsabort:
                     callOperation('btn_jiuzhongjiupai')
                     break;
+                case HOTKEYS.autowin:
+                    toggleAuto('btn_autohu')
+                    break;
+                case HOTKEYS.nocall:
+                    toggleAuto('btn_autonoming')
+                    break;
+                case HOTKEYS.autogiri:
+                    toggleAuto('btn_automoqie')
+                    break;
             }
             // send emojis
             if (EMOJI_HOTKEYS.includes(key)) {
@@ -123,10 +138,27 @@ var waitkbmod = setInterval(() => {
 
         }
 
+        function toggleAuto(op) {
+            uiscript.UI_DesktopInfo.Inst._container_fun.getChildByName(op)._clickHandler.method()
+        }
+
         function discardTile(index) {
             view.ViewPlayer_Me.Inst._choose_pai = view.ViewPlayer_Me.Inst.hand[index];
             view.ViewPlayer_Me.Inst.can_discard && view.ViewPlayer_Me.Inst._choose_pai.valid && (view.ViewPlayer_Me.Inst.DoDiscardTile(),
                 view.ViewPlayer_Me.Inst.resetMouseState())
+        }
+
+        function pressConfirm() {
+            if (uiscript.UIMgr.Inst && uiscript.UIMgr.Inst._ui_liuju && uiscript.UIMgr.Inst._ui_liuju._enable)
+                uiscript.UIMgr.Inst._ui_liuju.onBtnConfirm();
+            if (uiscript.UIMgr.Inst && uiscript.UIMgr.Inst._ui_gameend && uiscript.UIMgr.Inst._ui_gameend._enable)
+                uiscript.UIMgr.Inst._ui_gameend.onConfirm();
+            if (uiscript.UI_Huleshow.Inst && uiscript.UI_Huleshow.Inst._enable)
+                uiscript.UI_Huleshow.Inst.onBtnConfirm();
+            if (uiscript.UI_ScoreChange.Inst && uiscript.UI_ScoreChange.Inst._enable)
+                uiscript.UI_ScoreChange.Inst.onBtnConfirm();
+            if (uiscript.UIMgr.Inst && uiscript.UIMgr.Inst._ui_win && uiscript.UIMgr.Inst._ui_win._enable)
+                uiscript.UIMgr.Inst._ui_win.onConfirm();
         }
 
         function sendEmoji(index) {
@@ -190,19 +222,25 @@ var waitkbmod = setInterval(() => {
         }
 
         var keycss = `
+:root {
+	--keySize: 2.5vw;
+	--keySizeH: 2.5vh;
+}
 .key__button {
   box-sizing: border-box;
-  line-height: 2vw;
-  font-size: 1.5vw;
+  line-height: min(var(--keySize),calc(1.778*var(--keySizeH)));
+  font-size: calc(.8*min(var(--keySize),calc(1.778*var(--keySizeH))));
   text-align: center;
-  width: 2vw;
+  width: var(--keySize);
   color: #555;
-  height: 2vw;
+  height: var(--keySize);
+  max-width: calc(1.778*var(--keySizeH));
+  max-height: calc(1.778*var(--keySizeH));
   border-color: #f2f2f2;
   border-style: solid;
   text-shadow: 0 0.5px 1px #777, 0 2px 6px #f2f2f2;
   border-width: 1px;
-  border-radius: .5vw;
+  border-radius: calc(.25*min(var(--keySize),calc(1.778*var(--keySizeH))));
   background: -webkit-linear-gradient(top, #f9f9f9 0%, #D2D2D2 80%, #c0c0c0 100%);
   font-family: sans-serif;
   display: inline-block;
@@ -212,32 +250,49 @@ var waitkbmod = setInterval(() => {
 #tileLabels {
   display: flex;
   justify-content: space-around;
+  align-items: flex-end;
+  height: 100%;
+  width: var(--labelsWidth);
+  margin-left: var(--offsetLeft);
+  pointer-events: none;
+}
+#tileWrapper
+{
+    width: 100vw; 
+    height: 56.25vw; /* 100/56.25 = 1.778 */
+    max-height: 100vh;
+    max-width: 177.78vh; /* 16/9 = 1.778 */
+    margin: auto;
+    position: absolute;
+    top:0;bottom:0; /* vertical center */
+    left:0;right:0; /* horizontal center */
+	pointer-events: none;
 }
 	`,
             head = document.head || document.getElementsByTagName('head')[0],
-            style = document.createElement('style');
-        head.appendChild(style);
+            style = document.getElementById('tileStyle') || document.createElement("STYLE");
+        style.setAttribute('id', 'tileStyle');
+        style.innerHTML = '';
         style.type = 'text/css';
+        head.appendChild(style);
+        var n = 0,
+            a = 0;
+
+        Laya.Browser.width / 1920 < Laya.Browser.height / 1080 ? a = (Laya.Browser.height - Laya.Browser.width / 1920 * 1080) / 2 : n = (Laya.Browser.width - Laya.Browser.height / 1080 * 1920) / 2;
+        var x = (view.ViewPlayer_Me.Inst.handorigin_x - view.ViewPlayer_Me.Inst.screen_left - view.ViewPlayer_Me.Inst.handwidth / 2) / (view.ViewPlayer_Me.Inst.screen_right - view.ViewPlayer_Me.Inst.screen_left),
+            w = view.ViewPlayer_Me.Inst.handwidth * 14 / (view.ViewPlayer_Me.Inst.screen_right - view.ViewPlayer_Me.Inst.screen_left);
+        var keycssvars = ':root {--offsetLeft: ' + x * 100 + '%; --labelsWidth:' + w * 100 + '%; --maxWidth:' + w * 100 * 16 / 9 + 'vh}';
+        style.appendChild(document.createTextNode(keycssvars));
         style.appendChild(document.createTextNode(keycss));
 
-        function positionDiv() {
-            var n = 0,
-                a = 0,
-                canvas = document.getElementById('layaCanvas');
-            Laya.Browser.width / 1920 < Laya.Browser.height / 1080 ? a = (Laya.Browser.height - Laya.Browser.width / 1920 * 1080) / 2 : n = (Laya.Browser.width - Laya.Browser.height / 1080 * 1920) / 2;
-            var x = (view.ViewPlayer_Me.Inst.handorigin_x - view.ViewPlayer_Me.Inst.screen_left - view.ViewPlayer_Me.Inst.handwidth / 2) / (view.ViewPlayer_Me.Inst.screen_right - view.ViewPlayer_Me.Inst.screen_left) * (Laya.Browser.width - 2 * n) + (window.innerWidth - canvas.width) / 2,
-                y = (window.innerHeight - canvas.height) / 2 + canvas.height;
-            tileLabels.style.left = x + 'px'
-            tileLabels.style.top = 'calc(' + y + 'px - 2vw)'
-            tileLabels.style.width = (view.ViewPlayer_Me.Inst.handwidth * 14 / (view.ViewPlayer_Me.Inst.screen_right - view.ViewPlayer_Me.Inst.screen_left) * (Laya.Browser.width - 2 * n)) + 'px';
-        }
 
+        var tileWrapper = document.getElementById('tileWrapper') || document.createElement("DIV");
         var tileLabels = document.getElementById('tileLabels') || document.createElement("DIV");
+        tileWrapper.innerHTML = '';
+        tileWrapper.setAttribute('id', 'tileWrapper')
         tileLabels.innerHTML = '';
         tileLabels.setAttribute('id', 'tileLabels')
-        tileLabels.style.position = 'absolute';
-        tileLabels.style.visibility = 'hidden';
-        positionDiv();
+        tileWrapper.appendChild(tileLabels);
         var TILE_ELEMENTS = [];
         TILE_HOTKEYS.forEach((key, i) => {
             let kdiv = document.createElement('DIV');
@@ -252,12 +307,7 @@ var waitkbmod = setInterval(() => {
             tileLabels.appendChild(kdiv);
             TILE_ELEMENTS.push(kdiv);
         });
-        document.body.appendChild(tileLabels);
-        var resizeId;
-        window.onresize = () => {
-            clearTimeout(resizeId);
-            resizeId = setTimeout(positionDiv, 500);
-        }
+        document.body.appendChild(tileWrapper);
 
         function isInGame() {
             return this != null && view != null && view.DesktopMgr != null && view.DesktopMgr.Inst != null && view.DesktopMgr.player_link_state != null && game.Scene_MJ.Inst.active && (!uiscript.UI_GameEnd.Inst || !uiscript.UI_GameEnd.Inst.enable);
