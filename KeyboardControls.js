@@ -11,10 +11,13 @@
 // maybe:
 // tsumogiri + cancel on same button? might be conflicts such as tenpai state
 // correctly switch selected tile after calling if tile moved
-
+// allow skipping of quest/reward screen
+// allow any call button to work if only 1 option is available
 
 // If CONFIRM_DISCARDS is false tile hotkeys will discard immediately.
 var CONFIRM_DISCARDS = false;
+// show the hotkeys underneath the tiles.
+var SHOW_TILE_HOTKEYS = true;
 //                   1   2   3   4   5   6   7   8   9   0    -    =  bksp |
 var TILE_HOTKEYS = [49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 189, 187, 8, 220];
 // some may not display correctly, override below:
@@ -301,7 +304,7 @@ var waitkbmod = setInterval(() => {
             return this != null && view != null && view.DesktopMgr != null && view.DesktopMgr.Inst != null && view.DesktopMgr.player_link_state != null && game.Scene_MJ.Inst.active && (!uiscript.UI_GameEnd.Inst || !uiscript.UI_GameEnd.Inst.enable);
         }
         setInterval(() => {
-            if (isInGame()) {
+            if (isInGame() && SHOW_TILE_HOTKEYS) {
                 tileLabels.style.display = 'flex';
                 // hide unneeded hotkeys
                 TILE_ELEMENTS.forEach((e, i) => {
