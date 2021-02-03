@@ -1,3 +1,4 @@
+// 0.1
 // 'Deselect All' button will select all non-purple gifts if none are currently selected.
 var waitForLoad = setInterval(function() {
     if (uiscript && uiscript.UI_Bag_PageGift && uiscript.UI_Bag.Inst && uiscript.UI_Bag.Inst.page_gift) {

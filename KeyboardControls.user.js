@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         KeyboardControls
 // @namespace    https://github.com/NeverDecaf/
-// @version      0.1
+// @version      0.3
 // @description  Adds in-game keyboard controls
 // @author       NeverDecaf
 // @match        https://www.majsoul.com/*

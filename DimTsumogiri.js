@@ -1,3 +1,4 @@
+// 0.1
 // Dim tsumogiri similar to replay mode, set CHEATY = false to only dim for 1 go-around
 const CHEATY = true;
 var waittedashimod = setInterval(() => {

@@ -9,7 +9,7 @@ AUTHOR = 'NeverDecaf'
 HEADER = '''// ==UserScript==
 // @name         {name}
 // @namespace    https://github.com/{author}/
-// @version      0.1
+// @version      {version}
 // @description  {desc}
 // @author       {author}
 // @match        https://www.majsoul.com/*
@@ -22,7 +22,7 @@ HEADER = '''// ==UserScript==
 '''
 EXTENSION = '''{{
   "id": "{id}",
-  "version": "0.0.1",
+  "version": "0.{version}",
   "name": "{name}",
   "author": "{author}",
   "description": "{desc}",
@@ -33,17 +33,18 @@ EXTENSION = '''{{
 # delete old files?
 # for name in os.listdir('.'):
     # ext = os.path.splitext(name)
-    
-for root, dirs, files in os.walk('.'):
-    for name in filter(lambda f: f.lower().endswith('.js') and not f.lower().endswith('.user.js') ,files):
+for name in os.listdir('.'):
+    if os.path.isfile(name) and name.lower().endswith('.js') and not name.lower().endswith('.user.js'):
         dispname = os.path.splitext(name)[0]
-        with open(os.path.join(root, name), 'rb') as ofile:
+        with open(name, 'rb') as ofile:
+            version = ofile.readline().strip(b'/ \t\n\r').decode('utf8')
             desc = ofile.readline().strip(b'/ \t\n\r').decode('utf8')
-            with open(os.path.join(root, dispname+'.user.js'), 'wb') as file:
-                file.write(HEADER.format(name=dispname,author=AUTHOR,desc=desc).encode('utf8'))
+            print(version,desc)
+            with open(dispname+'.user.js', 'wb') as file:
+                file.write(HEADER.format(name=dispname,author=AUTHOR,desc=desc,version=version).encode('utf8'))
                 file.write(ofile.read())
         extjson = BytesIO()
-        extjson.write(EXTENSION.format(id=dispname, name=dispname ,author=AUTHOR, script=name, desc=desc).encode('utf8'))
+        extjson.write(EXTENSION.format(id=dispname, name=dispname ,author=AUTHOR, script=name, desc=desc, version=version).encode('utf8'))
         with zipfile.ZipFile('{}.mspe'.format(dispname), mode="w",compression=zipfile.ZIP_DEFLATED) as zf:
             zf.writestr('{}\\extension.json'.format(dispname),extjson.getvalue())
             zf.write(name,'{}\\{}'.format(dispname,name))

@@ -1,3 +1,4 @@
+// 0.1
 // Mute sounds if window lost focus
 const soundOptions = ['audio', 'music', 'lizhi', 'yuyin', 'teshuyuyin'];
 var soundSettings = {};

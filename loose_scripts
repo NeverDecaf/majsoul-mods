@@ -10,3 +10,16 @@ for (let step = 0; step < 12; step++) {
 app.NetAgent.sendReq2Lobby("Lobby","richmanActivityNextMove",{activity_id:1094});
 await sleep(250);
 }
+
+// Always show tips (cheat)
+if (game) {
+  const backupFun = view.DesktopMgr.prototype.initRoom
+  view.DesktopMgr.prototype.initRoom = function(...args) {
+    try {
+      args[0].mode.detail_rule.bianjietishi = true
+    } catch (e) {
+      console.warn(e)
+    }
+    return backupFun.call(this, ...args)
+  }
+}
